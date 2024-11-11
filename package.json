@@ -1,22 +1,38 @@
 {
-  "name": "nodejs-sandbox",
+  "name": "api-rate-limiter",
   "version": "1.0.0",
-  "description": "Node.js example server starter project",
+  "description": "An Express.js application with custom rate limiting using TypeScript and Redis",
   "license": "MIT",
   "main": "index.ts",
   "scripts": {
-    "start": "nodemon index.ts"
+    "start": "nodemon src/index.ts",
+    "test": "jest"
   },
   "keywords": [],
-  "author": "Ives van Hoorne",
+  "author": "Simon Qi",
   "devDependencies": {
     "@types/express": "^4.17.21",
+    "@types/ioredis-mock": "^8.2.5",
+    "@types/jest": "^29.5.14",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20.11.16",
+    "@types/supertest": "^6.0.2",
+    "eslint": "^9.14.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "ioredis-mock": "^8.9.0",
+    "jest": "^29.7.0",
     "nodemon": "^3.0.3",
+    "prettier": "^3.3.3",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.3"
   },
   "dependencies": {
-    "express": "^4.19.2"
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "ioredis": "^5.4.1",
+    "jsonwebtoken": "^9.0.2"
   }
 }
