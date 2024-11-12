@@ -38,8 +38,6 @@ const rateLimitMiddleware = (
       const globalOverrideKey = `rate_limit_override:global`;
       const ipOverrideKey = `rate_limit_override:ip:${normalizedIp}`;
 
-      console.log({ ipOverrideKey });
-
       // Check if there's a global override
       const globalOverride = await redisClient.get(globalOverrideKey);
       let finalLimit = globalOverride
