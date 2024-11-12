@@ -76,11 +76,13 @@ describe("Rate Limiter App", () => {
   });
 
   it("should have the ability to customize for a particular endpoint", async () => {
+    jest.useFakeTimers();
+
     for (let i = 0; i < rateLimitConfig.endpoints["/api/special"].limit; i++) {
       await request(app)
         .get("/api/special")
         .auth(validToken, { type: "bearer" });
-      await delay(5);
+      jest.advanceTimersByTime(1000);
     }
     const response = await request(app)
       .get("/api/special")
