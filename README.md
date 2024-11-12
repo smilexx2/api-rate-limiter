@@ -108,7 +108,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjMiL
 
    - **Description**: Allows an administrator to override the rate limit for specific IP addresses or globally.
    - **Request Body**:
-     ```json
+     ```
      {
        "type": "global" | "ip",
        "key": "<IP Address>", // required if type is "ip"
@@ -122,9 +122,9 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjMiL
      POST /admin/rate-limit-override
      Request Body: {
        "type": "ip",
-       "key": "192.168.1.1",
-       "newLimit": 500,
-       "ttlMs": 3600000
+       "key": "127.0.0.1",
+       "newLimit": 2,
+       "ttlMs": 10000
      }
      Response: "Rate limit updated successfully."
      ```
