@@ -9,24 +9,30 @@ import { RateLimit, RateLimitConfig } from "./types";
 
 dotenv.config();
 
-export const rateLimitConfig: RateLimitConfig = {
+export const defaultRateLimitConfig: RateLimitConfig = {
   globalAuthenticated: {
-    limit: 200, // Limit for authenticated users across all endpoints
-    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 10, // Limit for authenticated users across all endpoints
+    windowMs: 1 * 60 * 1000, // 1 minute
   },
   globalUnauthenticated: {
-    limit: 100, // Limit for unauthenticated users across all endpoints
-    windowMs: 60 * 60 * 1000, // 1 hour
+    limit: 5, // Limit for unauthenticated users across all endpoints
+    windowMs: 1 * 60 * 1000, // 1 minute
   },
   endpoints: {
     "/api/special": {
-      limit: 500,
-      windowMs: 5 * 60 * 1000, // 5 minutes
+      limit: 3,
+      windowMs: 30 * 1000, // 30 seconds
     },
   } as Record<string, RateLimit>, // Extendable for specific endpoints if needed
 };
 
-function createApp(redisClient: Redis = new Redis()) {
+function createApp(
+  redisClient: Redis = new Redis({
+    host: process.env.REDIS_HOST || "localhost",
+    port: Number(process.env.REDIS_PORT) || 6379,
+  }),
+  rateLimitConfig: RateLimitConfig = defaultRateLimitConfig
+) {
   const app = express();
 
   app.use(express.json());

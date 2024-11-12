@@ -2,17 +2,6 @@ import { NextFunction, Response } from "express";
 import Redis from "ioredis";
 import { AuthenticatedRequest, RateLimitConfig } from "../types";
 
-function getNormalizedIp(req: AuthenticatedRequest) {
-  let ip = req.ip;
-
-  // If the IP is an IPv4-mapped IPv6 address (e.g., ::ffff:127.0.0.1), normalize it
-  if (ip?.startsWith("::ffff:")) {
-    ip = ip.split("::ffff:")[1];
-  }
-
-  return ip;
-}
-
 const rateLimitMiddleware = (
   redisClient: Redis,
   rateLimitConfig: RateLimitConfig
@@ -31,9 +20,10 @@ const rateLimitMiddleware = (
 
       // Select configuration based on the endpoint or fallback to global defaults
       const config =
-        endpointConfig || req.isAuthenticated
+        endpointConfig ||
+        (req.isAuthenticated
           ? rateLimitConfig.globalAuthenticated
-          : rateLimitConfig.globalUnauthenticated;
+          : rateLimitConfig.globalUnauthenticated);
 
       const globalOverrideKey = `rate_limit_override:global`;
       const ipOverrideKey = `rate_limit_override:ip:${normalizedIp}`;
@@ -92,5 +82,16 @@ export const setRateLimitOverride = async (
       : `rate_limit_override:ip:${key}`;
   await redisClient.set(redisKey, newLimit, "PX", ttlMs);
 };
+
+function getNormalizedIp(req: AuthenticatedRequest) {
+  let ip = req.ip;
+
+  // If the IP is an IPv4-mapped IPv6 address (e.g., ::ffff:127.0.0.1), normalize it
+  if (ip?.startsWith("::ffff:")) {
+    ip = ip.split("::ffff:")[1];
+  }
+
+  return ip;
+}
 
 export default rateLimitMiddleware;

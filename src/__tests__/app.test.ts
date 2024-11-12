@@ -1,10 +1,28 @@
 import { Express } from "express";
 import Redis from "ioredis-mock";
 import request from "supertest";
-import createApp, { rateLimitConfig } from "../app";
+import createApp from "../app";
+import { RateLimit } from "../types";
 import jwt from "jsonwebtoken";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+const rateLimitConfig = {
+  globalAuthenticated: {
+    limit: 200, // Limit for authenticated users across all endpoints
+    windowMs: 60 * 60 * 1000, // 1 hour
+  },
+  globalUnauthenticated: {
+    limit: 100, // Limit for unauthenticated users across all endpoints
+    windowMs: 60 * 60 * 1000, // 1 hour
+  },
+  endpoints: {
+    "/api/special": {
+      limit: 500,
+      windowMs: 5 * 60 * 1000, // 5 minutes
+    },
+  } as Record<string, RateLimit>, // Extendable for specific endpoints if needed
+};
 
 const secretKey = process.env.JWT_SECRET_KEY as string; // Read the secret key from environment variables
 if (!secretKey) {
@@ -19,7 +37,7 @@ describe("Rate Limiter App", () => {
     jest.clearAllMocks();
     const redisClient = new Redis();
     await redisClient.flushall();
-    app = createApp(redisClient);
+    app = createApp(redisClient, rateLimitConfig);
   });
 
   afterEach(() => {
@@ -50,7 +68,7 @@ describe("Rate Limiter App", () => {
 
     for (let i = 0; i < rateLimitConfig.globalUnauthenticated.limit; i++) {
       await request(app).get("/");
-      jest.advanceTimersByTime(1000);
+      jest.advanceTimersByTime(10);
     }
 
     const response = await request(app).get("/");
@@ -79,14 +97,10 @@ describe("Rate Limiter App", () => {
     jest.useFakeTimers();
 
     for (let i = 0; i < rateLimitConfig.endpoints["/api/special"].limit; i++) {
-      await request(app)
-        .get("/api/special")
-        .auth(validToken, { type: "bearer" });
-      jest.advanceTimersByTime(1000);
+      await request(app).get("/api/special");
+      jest.advanceTimersByTime(10);
     }
-    const response = await request(app)
-      .get("/api/special")
-      .auth(validToken, { type: "bearer" });
+    const response = await request(app).get("/api/special");
     expect(response.status).toBe(429);
   });
 
@@ -134,7 +148,7 @@ describe("Rate Limiter App", () => {
 
     for (let i = 0; i < NEW_LIMIT; i++) {
       await request(app).get("/");
-      jest.advanceTimersByTime(1000);
+      jest.advanceTimersByTime(10);
     }
 
     await request(app).get("/").expect(429);
@@ -164,7 +178,7 @@ describe("Rate Limiter App", () => {
 
     for (let i = 0; i < NEW_LIMIT; i++) {
       await request(app).get("/");
-      jest.advanceTimersByTime(1000);
+      jest.advanceTimersByTime(10);
     }
 
     await request(app).get("/").expect(429);
